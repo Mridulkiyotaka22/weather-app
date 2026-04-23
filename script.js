@@ -11,8 +11,9 @@ const icon = document.querySelector(".icon");
 const locationText = document.querySelector(".location");
 
 const cityCards = document.querySelectorAll(".small");
+const locBtn = document.getElementById("locBtn");
 
-// 🌤️ ICON
+/* ICON */
 function getIcon(weather, iconCode) {
   const isNight = iconCode.includes("n");
   weather = weather.toLowerCase();
@@ -21,12 +22,10 @@ function getIcon(weather, iconCode) {
   if (weather.includes("cloud")) return isNight ? "☁️🌙" : "🌤️";
   if (weather.includes("rain")) return "🌧️";
   if (weather.includes("haze") || weather.includes("mist")) return "🌫️";
-  if (weather.includes("snow")) return "❄️";
-
   return "🌍";
 }
 
-// 🌈 BACKGROUND
+/* BACKGROUND */
 function setBackground(weather, iconCode) {
   const isNight = iconCode.includes("n");
   weather = weather.toLowerCase();
@@ -48,13 +47,9 @@ function setBackground(weather, iconCode) {
     document.body.style.background =
       "linear-gradient(135deg, #bdc3c7, #2c3e50)";
   } 
-  else {
-    document.body.style.background =
-      "linear-gradient(135deg, #0f0c29, #302b63, #ff00cc)";
-  }
 }
 
-// 🌦️ WEATHER
+/* WEATHER */
 async function getWeather(city) {
   const res = await fetch(
     `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
@@ -78,7 +73,7 @@ async function getWeather(city) {
   );
 }
 
-// 🔍 SEARCH
+/* SEARCH */
 button.onclick = () => {
   if (input.value.trim()) getWeather(input.value);
 };
@@ -87,7 +82,7 @@ input.addEventListener("keypress", (e) => {
   if (e.key === "Enter") getWeather(input.value);
 });
 
-// 🔍 SUGGESTIONS
+/* SUGGESTIONS */
 input.addEventListener("input", async () => {
   const query = input.value;
   if (query.length < 2) return (suggestionsBox.innerHTML = "");
@@ -113,19 +108,25 @@ input.addEventListener("input", async () => {
   });
 });
 
-// 📍 LOCATION
-navigator.geolocation.getCurrentPosition(async (pos) => {
-  const { latitude, longitude } = pos.coords;
+/* LOCATION BUTTON */
+locBtn.addEventListener("click", () => {
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const { latitude, longitude } = pos.coords;
 
-  const res = await fetch(
-    `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric`
-  );
-  const data = await res.json();
+    const res = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric`
+    );
+    const data = await res.json();
 
-  locationText.innerText = `📍 ${data.name} - ${Math.round(data.main.temp)}°C`;
+    locationText.innerText = `📍 ${data.name} - ${Math.round(data.main.temp)}°C`;
+
+    getWeather(data.name);
+  }, () => {
+    alert("Location permission denied ❌");
+  });
 });
 
-// 🌍 CITIES
+/* TOP CITIES */
 const cities = ["Delhi", "Mumbai", "London", "New York", "Tokyo"];
 
 async function loadCities() {

@@ -1,7 +1,7 @@
 const API_KEY = "c5bf8a24a2f1fc98ee8806f9a8a776b6";
 
 const input = document.querySelector("input");
-const button = document.querySelector("button");
+const searchBtn = document.querySelector(".search-box button");
 const suggestionsBox = document.getElementById("suggestions");
 
 const cityName = document.querySelector(".main h2");
@@ -11,7 +11,10 @@ const icon = document.querySelector(".icon");
 const locationText = document.querySelector(".location");
 
 const cityCards = document.querySelectorAll(".small");
+
 const locBtn = document.getElementById("locBtn");
+const spinner = document.querySelector(".spinner");
+const btnText = document.querySelector(".btn-text");
 
 /* ICON */
 function getIcon(weather, iconCode) {
@@ -32,21 +35,12 @@ function setBackground(weather, iconCode) {
 
   if (weather.includes("clear")) {
     document.body.style.background = isNight
-      ? "linear-gradient(135deg, #0f2027, #203a43, #2c5364)"
-      : "linear-gradient(135deg, #fceabb, #f8b500)";
-  } 
-  else if (weather.includes("cloud")) {
+      ? "linear-gradient(135deg,#0f0c29,#302b63,#24243e)"
+      : "linear-gradient(135deg,#fceabb,#f8b500)";
+  } else {
     document.body.style.background =
-      "linear-gradient(135deg, #757f9a, #d7dde8)";
-  } 
-  else if (weather.includes("rain")) {
-    document.body.style.background =
-      "linear-gradient(135deg, #4b79a1, #283e51)";
-  } 
-  else if (weather.includes("haze") || weather.includes("mist")) {
-    document.body.style.background =
-      "linear-gradient(135deg, #bdc3c7, #2c3e50)";
-  } 
+      "linear-gradient(135deg,#0f0c29,#302b63,#ff00cc)";
+  }
 }
 
 /* WEATHER */
@@ -62,30 +56,17 @@ async function getWeather(city) {
   temp.innerText = Math.round(data.main.temp) + "°C";
   desc.innerText = data.weather[0].description;
 
-  icon.innerText = getIcon(
-    data.weather[0].description,
-    data.weather[0].icon
-  );
-
-  setBackground(
-    data.weather[0].description,
-    data.weather[0].icon
-  );
+  icon.innerText = getIcon(data.weather[0].description, data.weather[0].icon);
+  setBackground(data.weather[0].description, data.weather[0].icon);
 }
 
 /* SEARCH */
-button.onclick = () => {
-  if (input.value.trim()) getWeather(input.value);
-};
-
-input.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") getWeather(input.value);
-});
+searchBtn.onclick = () => input.value && getWeather(input.value);
 
 /* SUGGESTIONS */
 input.addEventListener("input", async () => {
-  const query = input.value;
-  if (query.length < 2) return (suggestionsBox.innerHTML = "");
+  const query = input.value.trim();
+  if (query.length < 2) return suggestionsBox.innerHTML = "";
 
   const res = await fetch(
     `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${API_KEY}`
@@ -108,8 +89,12 @@ input.addEventListener("input", async () => {
   });
 });
 
-/* LOCATION BUTTON */
+/* LOCATION */
 locBtn.addEventListener("click", () => {
+  spinner.style.display = "inline-block";
+  btnText.innerText = "Detecting...";
+  locBtn.disabled = true;
+
   navigator.geolocation.getCurrentPosition(async (pos) => {
     const { latitude, longitude } = pos.coords;
 
@@ -118,16 +103,25 @@ locBtn.addEventListener("click", () => {
     );
     const data = await res.json();
 
-    locationText.innerText = `📍 ${data.name} - ${Math.round(data.main.temp)}°C`;
+    locationText.innerText =
+      `📍 ${data.name} - ${Math.round(data.main.temp)}°C`;
 
     getWeather(data.name);
+
+    spinner.style.display = "none";
+    btnText.innerText = "Use My Location";
+    locBtn.disabled = false;
+
   }, () => {
-    alert("Location permission denied ❌");
+    alert("Permission denied ❌");
+    spinner.style.display = "none";
+    btnText.innerText = "Use My Location";
+    locBtn.disabled = false;
   });
 });
 
 /* TOP CITIES */
-const cities = ["Delhi", "Mumbai", "London", "New York", "Tokyo"];
+const cities = ["Delhi","Mumbai","London","New York","Tokyo"];
 
 async function loadCities() {
   for (let i = 0; i < cities.length; i++) {
@@ -139,7 +133,11 @@ async function loadCities() {
     cityCards[i].innerText =
       `${data.name} - ${Math.round(data.main.temp)}°C`;
 
-    cityCards[i].onclick = () => getWeather(data.name);
+    cityCards[i].onclick = () => {
+      cityCards.forEach(c => c.classList.remove("active"));
+      cityCards[i].classList.add("active");
+      getWeather(data.name);
+    };
   }
 }
 

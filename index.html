@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Weather App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <p class="location">📍 Detecting...</p>
+
+  <div class="search-wrapper">
+    <div class="search-box">
+      <input type="text" placeholder="Search city...">
+      <button>🔍</button>
+    </div>
+    <ul id="suggestions"></ul>
+  </div>
+
+  <div class="card main">
+    <h2>City</h2>
+    <div class="icon">☀️</div>
+    <h1>--°C</h1>
+    <p class="desc">---</p>
+  </div>
+
+  <div class="cities">
+    <div class="card small"></div>
+    <div class="card small"></div>
+    <div class="card small"></div>
+    <div class="card small"></div>
+    <div class="card small"></div>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
